@@ -1,0 +1,28 @@
+"Games"
+{
+	"tf"
+	{
+		"Offsets"
+		{
+			"CTFBat::Smack"
+			{
+				"windows"	"462"
+				"linux"		"469"
+				"mac"		"469"
+			}
+			
+			"CBaseEntity::WorldSpaceCenter"
+			{
+				"windows"	"149"
+				"linux"		"150"
+				"mac"		"150"
+			}
+			"CBaseEntity::GetVelocity"
+			{
+				"windows"	"140"
+				"linux"		"141"
+				"mac"		"141"
+			}
+		}
+	}
+}
