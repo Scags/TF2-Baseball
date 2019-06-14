@@ -7,7 +7,7 @@ public Plugin myinfo =  {
 	author = "Scag", 
 	description = "Gone forever", 
 	version = "1.0.0", 
-	url = ""
+	url = "https://github.com/Scags/TF2-Baseball"
 };
 
 Handle hSmack;
@@ -20,7 +20,7 @@ ConVar cvRange;
 
 public void OnPluginStart()
 {
-	GameData conf = new GameData("tf2.baseball");
+	Handle conf = LoadGameConfigFile("tf2.baseball");
 	if (!conf)
 		SetFailState("Could not find gamedata for tf2.baseball");
 
@@ -39,7 +39,7 @@ public void OnPluginStart()
 	PrepSDKCall_SetFromConf(conf, SDKConf_Virtual, "CBaseEntity::WorldSpaceCenter");
 	PrepSDKCall_SetReturnInfo(SDKType_Vector, SDKPass_ByRef);
 	if (!(hWorldSpaceCenter = EndPrepSDKCall()))
-		LogError("Could not initialize call to CBaseEntity::WorldSpaceCenter");
+		LogError("Could not initialize call to CBaseEntity::WorldSpaceCenter. Falling back to m_vecOrigin.");
 
 	cvScalar = CreateConVar("sm_tfbaseball_velmult", "1.15", "Speed multiplier for a bat'd projectile.", FCVAR_NOTIFY, true, 0.00001);
 	cvFOV = CreateConVar("sm_tfbaseball_fov", "70.0", "FOV range for bat swinging to register as a valid hit.", FCVAR_NOTIFY, true, 0.0, true, 180.0);
@@ -89,6 +89,7 @@ public MRESReturn Smack(int pThis)
 	char classname[64]; GetEntityClassname(ent, classname, sizeof(classname));
 	if (!StrEqual(classname, "tf_projectile_pipe_remote", false))	// Shouldn't own sticky bombs
 	{
+		int team = GetClientTeam(owner);
 		if (HasEntProp(ent, Prop_Send, "m_hDeflectOwner"))
 			SetEntPropEnt(ent, Prop_Send, "m_hDeflectOwner", owner);
 		if (HasEntProp(ent, Prop_Send, "m_hLauncher"))
@@ -97,7 +98,8 @@ public MRESReturn Smack(int pThis)
 			SetEntPropEnt(ent, Prop_Send, "m_hThrower", owner);		// ONE of these HAS to work
 
 		SetEntPropEnt(ent, Prop_Send, "m_hOwnerEntity", owner);
-		SetEntProp(ent, Prop_Send, "m_iTeamNum", GetClientTeam(owner));
+		SetEntProp(ent, Prop_Send, "m_iTeamNum", team);
+		SetEntProp(ent, Prop_Send, "m_nSkin", team-2);
 	}
 
 	return MRES_Ignored;
@@ -122,7 +124,7 @@ public int FindBall(int client, const float vecFwd[3])
 
 		SubtractVectors(vecOtherPos, vecPos, vecSub);
 		NormalizeVector(vecSub, vecSub);
-		if (GetVectorDotProduct(vecFwd, vecSub) > max)	// It's within fov and within a reasonable melee range 
+		if (GetVectorDotProduct(vecFwd, vecSub) < max)	// It's within fov and within a reasonable melee range 
 			continue;									// Now, can you actually see it?
 		
 		TR_TraceRayFilter(vecPos, vecOtherPos, MASK_SOLID, RayType_EndPoint, TheTrace, client);
@@ -141,6 +143,7 @@ float[] WorldSpaceCenter(int entity)
 
 	return pos;
 }
+
 float[] GetVelocity(int entity)
 {
 	float vel[3], dummy[3];
@@ -156,6 +159,9 @@ public bool TheTrace(int ent, int mask, any data)
 	char classname[64]; GetEntityClassname(ent, classname, sizeof(classname));
 	if (StrContains(classname, "tf_projectile", false))
 		return false;
+
+	if (!strcmp(classname, "tf_projectile_syringe", false))
+		return false;	// Has no m_iDeflected
 
 	return true;
 }
