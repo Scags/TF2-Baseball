@@ -22,6 +22,7 @@ ConVar cvScalar;
 ConVar cvFOV;
 ConVar cvRange;
 ConVar cvTauntRange;
+ConVar bEnabled;
 
 public void OnPluginStart()
 {
@@ -51,6 +52,7 @@ public void OnPluginStart()
 	if (!DHookEnableDetour(hook, false, CTFPlayer_DoTauntAttack))
 		LogError("Could not load detour for CTFPlayer::DoTauntAttack!");	// Don't need to fail if its just the taunt effect
 
+	bEnabled = CreateConVar("sm_tfbaseball_enabled", "1.0", "Enable TF2Baseball.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	cvScalar = CreateConVar("sm_tfbaseball_velmult", "1.15", "Speed multiplier for a bat'd projectile.", FCVAR_NOTIFY, true, 0.00001);
 	cvFOV = CreateConVar("sm_tfbaseball_fov", "70.0", "FOV range for bat swing to register as a valid hit.", FCVAR_NOTIFY, true, 0.0, true, 180.0);
 	cvRange = CreateConVar("sm_tfbaseball_range", "150.0", "Max range a projectile can be before it is bat'd.", FCVAR_NOTIFY, true, 0.0);
@@ -71,7 +73,7 @@ public void OnMapStart()
 
 public void OnEntityCreated(int ent, const char[] classname)
 {
-	if (!StrContains(classname, "tf_weapon_bat", false))
+	if (bEnabled.BoolValue && !StrContains(classname, "tf_weapon_bat", false))
 		DHookEntity(hSmack, false, ent, _, Smack);
 }
 
@@ -102,7 +104,7 @@ public MRESReturn Smack(int pThis)
 
 public MRESReturn CTFPlayer_DoTauntAttack(int pThis)
 {
-	if (!TF2_IsPlayerInCondition(pThis, TFCond_Taunting) || !IsPlayerAlive(pThis))
+	if (!bEnabled.BoolValue || !TF2_IsPlayerInCondition(pThis, TFCond_Taunting) || !IsPlayerAlive(pThis))
 		return;
 
 	int tauntatk = GetEntData(pThis, FindSendPropInfo("CTFPlayer", "m_iSpawnCounter") - 24);
