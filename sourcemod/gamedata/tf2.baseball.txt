@@ -6,22 +6,22 @@
 		{
 			"CTFBat::Smack"
 			{
-				"windows"	"462"
-				"linux"		"469"
-				"mac"		"469"
+				"windows"	"466"
+				"linux"		"473"
+				"mac"		"473"
 			}
 			
 			"CBaseEntity::WorldSpaceCenter"
 			{
-				"windows"	"149"
-				"linux"		"150"
-				"mac"		"150"
+				"windows"	"152"
+				"linux"		"153"
+				"mac"		"153"
 			}
 			"CBaseEntity::GetVelocity"
 			{
-				"windows"	"140"
-				"linux"		"141"
-				"mac"		"141"
+				"windows"	"143"
+				"linux"		"144"
+				"mac"		"144"
 			}
 		}
 		"Signatures"
